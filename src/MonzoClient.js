@@ -111,9 +111,6 @@ export default class MonzoClient {
         }
 
         console.log(`Successfully stored access tokens.`);
-        // console.log(`Access Token: ${this.#ACCESS_TOKEN}`);
-        // console.log(`Refresh Token: ${this.#REFRESH_TOKEN}`);
-        // console.log(`User ID: ${this.#USER_ID}`);
     }
 
     //#endregion
@@ -121,7 +118,7 @@ export default class MonzoClient {
     async WhoAmI() {
         console.log('Pinging /whoami endpoint.');
         try {
-            const response = await axios.get(`${this.#MONZO_API_ENDPOINT}/ping/whoami`, { headers: { Authorization: `Bearer ${this.#ACCESS_TOKEN}` } })
+            const response = await this.#Request('get', `${this.#MONZO_API_ENDPOINT}/ping/whoami`);
             // console.log(response.data);
             return response.data;
         } catch (error) {
@@ -146,12 +143,7 @@ export default class MonzoClient {
             }
 
             const qs = new URLSearchParams(params).toString();
-            const response = await axios.get(`${this.#MONZO_API_ENDPOINT}/transactions?expand[]=merchant&${qs}`, {
-                headers: {
-                    Authorization: `Bearer ${this.#ACCESS_TOKEN}`
-                }
-            });
-            // console.log(response.data);
+            const response = await this.#Request('get', `${this.#MONZO_API_ENDPOINT}/transactions?expand[]=merchant&${qs}`);
             return response.data
         } catch (error) {
             console.error('Failed to get transactions.');
@@ -161,8 +153,7 @@ export default class MonzoClient {
 
     async GetAccount() {
         try {
-            const response = await axios.get(`${this.#MONZO_API_ENDPOINT}/accounts/`, { headers: { Authorization: `Bearer ${this.#ACCESS_TOKEN}` } });
-            // console.log(response.data);
+            const response = await this.#Request('get', `${this.#MONZO_API_ENDPOINT}/accounts/`);
             return response.data.accounts[0].id;
         } catch (error) {
             console.error('Failed to get account.');
@@ -172,12 +163,39 @@ export default class MonzoClient {
 
     async GetAccounts() {
         try {
-            const response = await axios.get(`${this.#MONZO_API_ENDPOINT}/accounts/`, { headers: { Authorization: `Bearer ${this.#ACCESS_TOKEN}` } });
+            // const response = await axios.get(`${this.#MONZO_API_ENDPOINT}/accounts/`, { headers: { Authorization: `Bearer ${this.#ACCESS_TOKEN}` } });
+            const response = await this.#Request('get', `${this.#MONZO_API_ENDPOINT}/accounts/`)
             // console.log(response.data);
             return response.data;
         } catch (error) {
             console.error('Failed to get accounts.');
             // console.error(error);
+        }
+    }
+
+    async #Request(method, url, data, isRetry) {
+        try {
+            return await axios({
+                method: method,
+                url: url,
+                data: data,
+                headers: { Authorization: `Bearer ${this.#ACCESS_TOKEN}` }
+            })
+        } catch (error) {
+            // Only attempt to re-authenticate once, if this fails it's likely the refresh token is no longer valid and the user must
+            // re-authenticate using the /auth endpoint.
+            if (error.response?.status === 403 && !isRetry) {
+                try {
+                    console.log('Request failed with "Unauthorised" status code. Attempting to refresh access token...');
+                    await this.RefreshAccessToken(this.#REFRESH_TOKEN);
+                } catch (error) {
+                    // TODO: Email user to re-authenticate.
+                }
+
+                this.#Request(method, url, data, true);
+            } else {
+                throw error;
+            }
         }
     }
 }
