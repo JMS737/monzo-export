@@ -3,7 +3,6 @@ import { writeFile, readFile, mkdir } from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
 
 /* TODO:
-- [ ] Add error handling around 403 (unauthorised) errors.
 - [ ] Send an email notifying the user that the service needs to be reauthenticated.
 */
 
@@ -128,8 +127,8 @@ export default class MonzoClient {
     }
 
     async GetTransactions(since) {
-        const account = await this.GetAccount();
-        return await this.GetTransactionsForAccount(account, since);
+        const accounts = await this.GetAccounts();
+        return (await Promise.all(accounts.accounts.map(async account => await this.GetTransactionsForAccount(account.id, since)))).flatMap(x => x.transactions);
     }
 
     async GetTransactionsForAccount(account_id, since) {

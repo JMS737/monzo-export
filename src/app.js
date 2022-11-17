@@ -89,7 +89,7 @@ server.get('/export/transactions/latest', async (req, res) => {
     console.log(since);
 
     const data = await client.GetTransactions(since);
-    TransactionsToCsv(TransformTransactions(data.transactions));
+    TransactionsToCsv(TransformTransactions(data));
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ success: true }));
@@ -104,6 +104,7 @@ function TransformTransactions(transactions) {
         const createdDate = new Date(transaction.created);
         const regex = /\s+/g
         return {
+            account_id: transaction.account_id,
             id: transaction.id,
             date: format("yyyy/MM/dd", createdDate),
             time: format("hh:mm:ss", createdDate),
