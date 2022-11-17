@@ -130,8 +130,8 @@ dist
 .pnp.*
 
 .env
+docker-compose.yml
 !examples/*
 archived/
 output/
 cache/
-docker-compose.yml

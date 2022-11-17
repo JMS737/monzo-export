@@ -2,6 +2,11 @@ import axios from "axios";
 import { writeFile, readFile, mkdir } from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
 
+/* TODO:
+- [ ] Add error handling around 403 (unauthorised) errors.
+- [ ] Send an email notifying the user that the service needs to be reauthenticated.
+*/
+
 export default class MonzoClient {
     #CLIENT_ID = process.env.CLIENT_ID;
     #CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -27,8 +32,6 @@ export default class MonzoClient {
 
         // Load any existing Refresh Token and if available use that to get a new Access Token.
         // TODO: Otherwise send an email to the user asking them to authenticate using the /auth endpoint.
-
-        console.log(this.#TOKEN_FILE)
         if (this.#TOKEN_FILE != undefined && this.#TOKEN_FILE != null && this.#TOKEN_FILE != "") {
             try {
                 const data = await readFile(`${this.#TOKEN_DIRECTORY}/${this.#TOKEN_FILE}`, 'utf-8');

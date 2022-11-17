@@ -1,9 +1,3 @@
-/* TODO
-- [ ] Add error handling around 403 (unauthorised) errors.
-- [ ] Send an email notifying the user that the service needs to be reauthenticated.
-- [ ] Create an endpoint which triggers an upload of the output file using the Firefly III Data Importer REST API.
-*/
-
 // Load .env values into process.env
 import dotenv from "dotenv";
 dotenv.config();

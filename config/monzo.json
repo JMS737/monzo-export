@@ -1,7 +1,7 @@
 {
     "version": 3,
     "source": "fidi-0.9.17",
-    "created_at": "2022-11-17T01:15:48+01:00",
+    "created_at": "2022-11-17T17:06:00+01:00",
     "date": "Y\/m\/d",
     "default_account": 1,
     "delimiter": "comma",
@@ -38,11 +38,17 @@
     "mapping": {
         "6": {
             "bills": 8,
+            "charity": 15,
             "eating_out": 2,
             "entertainment": 5,
+            "expenses": 11,
+            "general": 13,
             "groceries": 4,
+            "holidays": 14,
             "income": 7,
+            "personal_care": 12,
             "savings": 1,
+            "shopping": 10,
             "transfers": 6,
             "transport": 3
         }

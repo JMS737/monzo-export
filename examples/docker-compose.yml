@@ -1,0 +1,15 @@
+version: '3.3'
+
+services:
+  app:
+    image: docker.jsapsed.co.uk/monzo-export
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - 8080:8080
+    volumes:
+      - ./output:/usr/src/app/output
+      - ./archived:/usr/src/app/archived
+      - monzo-cache:/usr/src/app/cache
+volumes:
+  monzo-cache:
