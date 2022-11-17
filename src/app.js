@@ -40,18 +40,18 @@ server.get('/auth', (req, res) => {
     client.Authorize(res);
 });
 
-server.get('/callback', async (req, res) => {
+server.get('/auth/callback', async (req, res) => {
     const queryObject = parse(req.url, true).query;
-    console.log(queryObject);
+    // console.log(queryObject);
 
     const code = queryObject.code;
     const state = queryObject.state;
-
-    if (state != client.STATE) {
-        return res.status(400).send("State did not match");
+    
+    try {
+        client.GetAccessToken(code, state);
+    } catch (error) {
+        return res.status(400).send(error.message);
     }
-
-    client.GetAccessToken(code, state);
 
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end('Try adding some query parameters to the end of the url.');

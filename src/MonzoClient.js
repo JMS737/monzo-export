@@ -1,10 +1,11 @@
 import axios from "axios";
 import { writeFile, readFile, mkdir } from "fs/promises";
+import { v4 as uuidv4 } from "uuid";
 
 export default class MonzoClient {
     #CLIENT_ID = process.env.CLIENT_ID;
     #CLIENT_SECRET = process.env.CLIENT_SECRET;
-    STATE = process.env.STATE;
+    #STATE;
     #MONZO_AUTH_ENDPOINT = process.env.MONZO_AUTH_ENDPOINT;
     #MONZO_TOKEN_PATH = process.env.MONZO_TOKEN_PATH;
     #MONZO_API_ENDPOINT = process.env.MONZO_API_ENDPOINT;
@@ -24,7 +25,6 @@ export default class MonzoClient {
         } else {
             this.#REDIRECT_URI = `${host}/${this.#REDIRECT_PATH}`;
         }
-        console.log(`Redirect URI: ${this.#REDIRECT_URI}`);
     }
 
     async Init() {
@@ -36,7 +36,7 @@ export default class MonzoClient {
             const data = await readFile(`${this.#TOKEN_DIRECTORY}/${this.#TOKEN_FILE}`, 'utf-8');
 
             this.#REFRESH_TOKEN = data;
-            console.log(`Existing refresh token found: ${this.#REFRESH_TOKEN}`);
+            console.log('Existing refresh token found. Attempting to get access token.');
             await this.RefreshAccessToken(this.#REFRESH_TOKEN);
 
         } catch (err) {
@@ -48,10 +48,15 @@ export default class MonzoClient {
     //#region Authorization
 
     Authorize(res) {
-        res.redirect(`${this.#MONZO_AUTH_ENDPOINT}/?client_id=${this.#CLIENT_ID}&redirect_uri=${this.#REDIRECT_URI}&response_type=code&state=${this.STATE}`);
+        this.#STATE = new uuidv4();
+        res.redirect(`${this.#MONZO_AUTH_ENDPOINT}/?client_id=${this.#CLIENT_ID}&redirect_uri=${this.#REDIRECT_URI}&response_type=code&state=${this.#STATE}`);
     }
 
     async GetAccessToken(authCode, state) {
+        if (state != this.#STATE) {
+            throw new Error("State did not match.");
+        }
+
         const data = new URLSearchParams({
             grant_type: "authorization_code",
             client_id: this.#CLIENT_ID,
@@ -60,7 +65,7 @@ export default class MonzoClient {
             code: authCode
         }).toString();
 
-        console.log(`Getting new access token. Sending request: ${this.#MONZO_API_ENDPOINT}${this.#MONZO_TOKEN_PATH}; Body: ${data}`);
+        console.log('Requesting new access token...');
 
         try {
             const response = await axios.post(`${this.#MONZO_API_ENDPOINT}${this.#MONZO_TOKEN_PATH}`, data);
@@ -78,7 +83,7 @@ export default class MonzoClient {
             refresh_token: refresh_token
         }).toString();
 
-        console.log(`Refreshing access token. Sending request: ${this.#MONZO_API_ENDPOINT}${this.#MONZO_TOKEN_PATH}; Body: ${data}`);
+        console.log('Refreshing access token...');
 
         try {
             const response = await axios.post(`${this.#MONZO_API_ENDPOINT}${this.#MONZO_TOKEN_PATH}`, data);
@@ -101,10 +106,10 @@ export default class MonzoClient {
             return;
         }
 
-        console.log(`Sucessfully stored access tokens:`);
-        console.log(`Access Token: ${this.#ACCESS_TOKEN}`);
-        console.log(`Refresh Token: ${this.#REFRESH_TOKEN}`);
-        console.log(`User ID: ${this.#USER_ID}`);
+        console.log(`Successfully stored access tokens.`);
+        // console.log(`Access Token: ${this.#ACCESS_TOKEN}`);
+        // console.log(`Refresh Token: ${this.#REFRESH_TOKEN}`);
+        // console.log(`User ID: ${this.#USER_ID}`);
     }
 
     //#endregion
