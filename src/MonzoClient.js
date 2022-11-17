@@ -32,17 +32,20 @@ export default class MonzoClient {
 
         // Load any existing Refresh Token and if available use that to get a new Access Token.
         // TODO: Otherwise send an email to the user asking them to authenticate using the /auth endpoint.
-        try {
-            const data = await readFile(`${this.#TOKEN_DIRECTORY}/${this.#TOKEN_FILE}`, 'utf-8');
 
-            this.#REFRESH_TOKEN = data;
-            console.log('Existing refresh token found. Attempting to get access token.');
-            await this.RefreshAccessToken(this.#REFRESH_TOKEN);
+        console.log(this.#TOKEN_FILE)
+        if (this.#TOKEN_FILE != undefined && this.#TOKEN_FILE != null && this.#TOKEN_FILE != "") {
+            try {
+                const data = await readFile(`${this.#TOKEN_DIRECTORY}/${this.#TOKEN_FILE}`, 'utf-8');
 
-        } catch (err) {
-            console.error(err);
+                this.#REFRESH_TOKEN = data;
+                console.log('Existing refresh token found. Attempting to get access token.');
+                await this.RefreshAccessToken(this.#REFRESH_TOKEN);
+
+            } catch (err) {
+                console.error(err);
+            }
         }
-
     }
 
     //#region Authorization
@@ -99,11 +102,14 @@ export default class MonzoClient {
         this.#REFRESH_TOKEN = refresh_token;
         this.#USER_ID = user_id;
 
-        try {
-            await writeFile(`${this.#TOKEN_DIRECTORY}/${this.#TOKEN_FILE}`, this.#REFRESH_TOKEN);
-        } catch (error) {
-            console.error(error);
-            return;
+        // Only store the tokens if hte TOKEN_FILE configuration value has been set.
+        if (this.#TOKEN_FILE != undefined && this.#TOKEN_FILE != null && this.#TOKEN_FILE != "") {
+            try {
+                await writeFile(`${this.#TOKEN_DIRECTORY}/${this.#TOKEN_FILE}`, this.#REFRESH_TOKEN);
+            } catch (error) {
+                console.error(error);
+                return;
+            }
         }
 
         console.log(`Successfully stored access tokens.`);
