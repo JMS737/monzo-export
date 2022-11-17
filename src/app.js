@@ -20,7 +20,6 @@ const OUTPUT_FILENAME = process.env.OUTPUT_FILENAME
 
 const OUTPUT_DIRECTORY = process.env.OUTPUT_DIRECTORY;
 const ARCHIVE_DIRECTORY = process.env.ARCHIVE_DIRECTORY;
-const CONFIG_DIRECTORY = process.env.CONFIG_DIRECTORY;
 
 const client = new MonzoClient();
 
