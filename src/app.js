@@ -28,7 +28,7 @@ const OUTPUT_DIRECTORY = process.env.OUTPUT_DIRECTORY;
 const ARCHIVE_DIRECTORY = process.env.ARCHIVE_DIRECTORY;
 const CONFIG_DIRECTORY = process.env.CONFIG_DIRECTORY;
 
-const client = new MonzoClient(`http://${hostname}:${port}`);
+const client = new MonzoClient();
 
 await Setup();
 

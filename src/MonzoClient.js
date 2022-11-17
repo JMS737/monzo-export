@@ -9,8 +9,7 @@ export default class MonzoClient {
     #MONZO_AUTH_ENDPOINT = process.env.MONZO_AUTH_ENDPOINT;
     #MONZO_TOKEN_PATH = process.env.MONZO_TOKEN_PATH;
     #MONZO_API_ENDPOINT = process.env.MONZO_API_ENDPOINT;
-    #REDIRECT_PATH = process.env.REDIRECT_PATH;
-    #REDIRECT_URI;
+    #REDIRECT_URI = process.env.REDIRECT_URI
     #TOKEN_FILE = process.env.TOKEN_FILE;
     #TOKEN_DIRECTORY = process.env.TOKEN_DIRECTORY;
 
@@ -19,12 +18,8 @@ export default class MonzoClient {
     #REFRESH_TOKEN = undefined;
     #USER_ID = undefined;
 
-    constructor(host) {
-        if (this.#REDIRECT_PATH[0] == "/") {
-            this.#REDIRECT_URI = `${host}${this.#REDIRECT_PATH}`;
-        } else {
-            this.#REDIRECT_URI = `${host}/${this.#REDIRECT_PATH}`;
-        }
+    constructor() {
+        
     }
 
     async Init() {
