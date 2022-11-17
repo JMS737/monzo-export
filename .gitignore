@@ -135,3 +135,4 @@ docker-compose.yml
 archived/
 output/
 cache/
+config/
