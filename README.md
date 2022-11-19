@@ -4,8 +4,8 @@ A simple node.js webserver which can be used to download transactions from a Mon
 
 I created this to be used in conjuction with the great [Firefly III](https://github.com/firefly-iii/firefly-iii) application (or more specifically the Firefly III Data Importer companion app) to be able to automate the process of extracting transaction data from Monzo and importing it into Firefly III. However you can use this as you wish, it provides REST endpoints for getting transactions as JSON or an endpoint for trigging a csv to be generated.
 
-# Installation
-## Self Hosted
+## Installation
+### Self Hosted
 Ensure `node` and `npm` are installed on the target system.
 
 Clone the git repos somewhere and install dependencies.
@@ -24,17 +24,17 @@ Run the webserver using one of the following commands.
 > node src/app.js
 ```
 
-## Docker Compose
+### Docker Compose
 Check out the example [docker-compose](https://github.com/JMS737/monzo-export/blob/main/examples/docker-compose.yml) file to quickly get the application up and running. Configuration values can be provided using the `env_file` option or by setting them in the `environment` section of the docker-compose.yml file.
 
-# Configuration
-## Environment
+## Configuration
+### Environment
 All configuration is handled via environment variables which can be set either on the operating system or via a .env file. See the example [here](https://github.com/JMS737/monzo-export/blob/main/examples/.env) to view what options are available along with the default values. If you're using the docker image the environment variables can also set via the CLI or the docker-compose.yml file.
 
-## Connecting to Monzo
+### Connecting to Monzo
 First we need to set up a client within the Monzo Developer Portal, so head over to https://developers.monzo.com/ and follow the instructions to sign in. Once you're in navigate to the **Clients** page using the link in the top right and click the **+ New OAuth Client** button. Next fill out the details like so:
 
-|||
+|Value|Setting|
 |-|-|
 | Name | Give the client a name which be displayed within the Monzo app when asking for approval. |
 | Logo URL | Provide the URL to a logo if you wish but this isn't required. |
@@ -46,18 +46,18 @@ Once finished, click the **Submit** button and take a note of the `Client ID` an
 
 To grant the application access to your Monzo account you will first need to havigate to the `/auth` endpoint (i.e. `http://localhost:8080/auth` if running locally). This will trigger the OAuth2 user flow and get you to authorize access.
 
-## Persisting Authorisation
+### Persisting Authorisation
 If you wish to persist the authorisation between restarts of the application you can set the `TOKEN_FILE` configuration option to a filenme which the application will use to save the refresh token it receives. This will be read in autoamatically if it exists when the application restarts and used to obtain a new access token (assuming the refresh token is still valid). Otherwise you'll need to repeat the connecting to Monzo step each time the application starts.
 
-# Endpoints
-## Who Am I
-### Request
+## Endpoints
+### Who Am I
+#### Request
 `GET /whoami`
 ``` bash
 curl -i -H 'Accept: application/json' http://localhost:8080/whoami
 ```
-### Response
-``` json
+#### Response
+```
 HTTP/1.1 200 OK
 Content-Type: application/json
 Date: Sat, 19 Nov 2022 22:18:58 GMT
@@ -71,13 +71,14 @@ Transfer-Encoding: chunked
     "user_id":"<your user id>"
 }
 ```
-## Accounts
+### Accounts
+#### Request
 `GET /accounts`
 ``` bash
 curl -i -H 'Accept: application/json' http://localhost:8080/accounts
 ```
-### Response
-``` json
+#### Response
+```
 HTTP/1.1 200 OK
 Content-Type: application/json
 Date: Sat, 19 Nov 2022 22:22:04 GMT
@@ -114,18 +115,18 @@ Transfer-Encoding: chunked
     ]
 }
 ```
-## Transactions (JSON)
-### Request
+### Transactions (JSON)
+#### Request
 `/GET /transactions`
 
 Optional Date Parameter `since` (only fetches transactions on and after that date).
 ``` bash
 curl -i -H 'Accept: application/json' http://localhost:8080/transactions?since=2022-01-31T00:00:00.000Z
 ```
-### Response
+#### Response
 This is only a sample transaction, not all fields are shown here. See https://docs.monzo.com/#transactions for more details.
 
-``` json
+```
 HTTP/1.1 200 OK
 X-Powered-By: Express
 Content-Type: application/json
@@ -164,12 +165,12 @@ Transfer-Encoding: chunked
 ]
 ```
 
-## Transactions (CSV Export)
+### Transactions (CSV Export)
 Calling either of these endpoints will trigger the generation of a CSV containing the all transactions after the provided `since` parameter, or all transactions if this is omitted **(see [Limitations and Caveats](#limitations-and-caveats) to get transactions older than 90 days).**
 
 Where the CSV is output can be configured with the `OUTPUT_DIRECTORY` and `OUTPUT_FILENAME` configuration values. By default it will be `./output/export.csv`.
 
-### Requests
+#### Requests
 `/GET /export/transactions`
 
 Optional Date Parameter `since` (only fetches transactions on and after that date).
@@ -184,8 +185,8 @@ Shorthand for returning all transactions within the last month.
 curl -i -H 'Accept: application/json' http://localhost:8080/export/transactions/latest
 ```
 
-### Response
-``` json
+#### Response
+```
 HTTP/1.1 200 OK
 Content-Type: application/json
 Date: Sat, 19 Nov 2022 22:37:56 GMT
@@ -196,15 +197,15 @@ Transfer-Encoding: chunked
 {"success":true}
 ```
 
-### Sample CSV Output
+#### Sample CSV Output
 ``` csv
 account_id,id,date,time,type,merchant,counterparty_account,category,amount,currency,notes,description
 acc_0000000000000000000000,tx_00008zIcpb1TB4yeIFXMzx,2015/08/22,07:52:27,mastercard,The De Beauvoir Deli Co.,,eating_out,-5.10,GBP,Salmon sandwich 🍞,THE DE BEAUVOIR DELI C LONDON        GBR London GBR
 acc_0000000000000000000000,tx_00008zL2INM3xZ41THuRF3,2015/08/23,07:01:34,payport_faster_payments,,01234567,transfers,-100,GBP,Moving money to savings account.,Savings Deposit
 ```
 
-# Building
-## Docker
+## Building
+### Docker
 A Dockerfile has been included should you wish to build your own image.
 
 To build, run the following command from the project's root directory:
@@ -216,6 +217,6 @@ Alternatively to build for multiple platforms (i.e. arm64 if you wish to run thi
 docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t <image name> --push .
 ```
 
-# Limitations and Caveats
-## Retrieving transactions older than 90 days
-Due to *Strong Customer Authentication* changes implemented by Monzo you are only able to fetch all transactions within the first 5 minutes after authentication. After this 5 minute period you'll only be able to fetch transactions within the last 90 days. *(Failing to enter a valid `since` date as a query parameter on the `/transactions` and `/export/transactions` will result in a HTTP 403 (Unauthorised) error).*
+## Limitations and Caveats
+### Retrieving transactions older than 90 days
+Due to *Strong Customer Authentication* changes implemented by Monzo you are only able to fetch all transactions within the first 5 minutes after authentication. After this 5 minute period you'll only be able to fetch transactions within the last 90 days. *(Failing to enter a valid `since` date as a query parameter on the `/transactions` and `/export/transactions` endpoints will result in a HTTP 403 (Unauthorised) error).*
