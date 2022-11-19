@@ -29,7 +29,7 @@ Check out the example [docker-compose](https://github.com/JMS737/monzo-export/bl
 
 ## Configuration
 ### Environment
-All configuration is handled via environment variables which can be set either on the operating system or via a .env file. See the example [here](https://github.com/JMS737/monzo-export/blob/main/examples/.env) to view what options are available along with the default values. If you're using the docker image the environment variables can also set via the CLI or the docker-compose.yml file.
+All configuration is handled via environment variables which can be set either on the operating system or via a .env file. See the example [here](https://github.com/JMS737/monzo-export/blob/main/examples/.env) to view what options are available along with the default values. If you're using the docker image the environment variables can also be set via the CLI or the docker-compose.yml file.
 
 ### Connecting to Monzo
 First we need to set up a client within the Monzo Developer Portal, so head over to https://developers.monzo.com/ and follow the instructions to sign in. Once you're in navigate to the **Clients** page using the link in the top right and click the **+ New OAuth Client** button. Next fill out the details like so:
@@ -44,10 +44,10 @@ First we need to set up a client within the Monzo Developer Portal, so head over
 
 Once finished, click the **Submit** button and take a note of the `Client ID` and `Client Secret` on the newly created client. You'll want to set these values in the `CLIENT_ID` and `CLIENT_SECRET` configuration variables, either via environment variables or the .env file as mentioned in the [Environment](#environment) section. Also, set the `REDIRECT_URI` to the same one you used when creating the client.
 
-To grant the application access to your Monzo account you will first need to havigate to the `/auth` endpoint (i.e. `http://localhost:8080/auth` if running locally). This will trigger the OAuth2 user flow and get you to authorize access.
+Finally, to grant the application access to your Monzo account start the application and naviage to the `/auth` endpoint (i.e. `http://localhost:8080/auth` if running locally). This will trigger the OAuth2 user flow and get you to authorize access. Follow the instructions to complete the authorization, and don't forget to approve it within the mobile app as well or some requests may fail.
 
 ### Persisting Authorisation
-If you wish to persist the authorisation between restarts of the application you can set the `TOKEN_FILE` configuration option to a filenme which the application will use to save the refresh token it receives. This will be read in autoamatically if it exists when the application restarts and used to obtain a new access token (assuming the refresh token is still valid). Otherwise you'll need to repeat the connecting to Monzo step each time the application starts.
+If you wish to persist the authorisation between restarts of the application, set the `TOKEN_FILE` configuration value to a filename. The application will use this file to save the refresh token it receives, and will read this in autoamatically when the application restarts and use it to obtain a new access token (assuming the refresh token is still valid). Otherwise you'll need to repeat the connecting to Monzo step each time the application starts.
 
 ## Endpoints
 ### Who Am I
@@ -124,7 +124,7 @@ Optional Date Parameter `since` (only fetches transactions on and after that dat
 curl -i -H 'Accept: application/json' http://localhost:8080/transactions?since=2022-01-31T00:00:00.000Z
 ```
 #### Response
-This is only a sample transaction, not all fields are shown here. See https://docs.monzo.com/#transactions for more details.
+This is only a sample transaction, not all fields are shown here. See the Monzo documentation (https://docs.monzo.com/#transactions) for the full list of available fields.
 
 ```
 HTTP/1.1 200 OK
@@ -168,7 +168,7 @@ Transfer-Encoding: chunked
 ### Transactions (CSV Export)
 Calling either of these endpoints will trigger the generation of a CSV containing the all transactions after the provided `since` parameter, or all transactions if this is omitted **(see [Limitations and Caveats](#limitations-and-caveats) to get transactions older than 90 days).**
 
-Where the CSV is output can be configured with the `OUTPUT_DIRECTORY` and `OUTPUT_FILENAME` configuration values. By default it will be `./output/export.csv`.
+The CSV is output can be configured with the `OUTPUT_DIRECTORY` and `OUTPUT_FILENAME` configuration values. By default it will be saved to `./output/export.csv`.
 
 #### Requests
 `/GET /export/transactions`
