@@ -189,6 +189,7 @@ export default class MonzoClient {
                     await this.RefreshAccessToken(this.#REFRESH_TOKEN);
                 } catch (error) {
                     // TODO: Email user to re-authenticate.
+                    return
                 }
 
                 this.#Request(method, url, data, true);
