@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
   app:
-    image: docker.jsapsed.co.uk/monzo-export
+    image: jms777/monzo-export
     restart: unless-stopped
     env_file: .env
     ports:
