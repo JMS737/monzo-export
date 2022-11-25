@@ -181,9 +181,10 @@ export default class MonzoClient {
                 headers: { Authorization: `Bearer ${this.#ACCESS_TOKEN}` }
             })
         } catch (error) {
+            console.error(`Monzo Client request failed with status code ${error.response?.status}. ${error}`)
             // Only attempt to re-authenticate once, if this fails it's likely the refresh token is no longer valid and the user must
             // re-authenticate using the /auth endpoint.
-            if (error.response?.status === 403 && !isRetry) {
+            if ((error.response?.status === 401 || error.response?.status === 403) && !isRetry) {
                 try {
                     console.log('Request failed with "Unauthorised" status code. Attempting to refresh access token...');
                     await this.RefreshAccessToken(this.#REFRESH_TOKEN);
