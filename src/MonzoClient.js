@@ -34,7 +34,9 @@ export default class MonzoClient {
         if (this.#TOKEN_FILE != undefined && this.#TOKEN_FILE != null && this.#TOKEN_FILE != "") {
             try {
                 const data = await readFile(`${this.#TOKEN_DIRECTORY}/${this.#TOKEN_FILE}`, 'utf-8');
-
+                if (data == undefined || data == "" || data == null) {
+                    return;
+                }
                 this.#REFRESH_TOKEN = data;
                 console.log('Existing refresh token found. Attempting to get access token.');
                 await this.RefreshAccessToken(this.#REFRESH_TOKEN);
@@ -87,7 +89,7 @@ export default class MonzoClient {
 
         try {
             const response = await axios.post(`${this.#MONZO_API_ENDPOINT}${this.#MONZO_TOKEN_PATH}`, data);
-            this.StoreToken(response.data.access_token, response.data.refresh_token, response.data.user_id);
+            await this.StoreToken(response.data.access_token, response.data.refresh_token, response.data.user_id);
 
         } catch (error) {
             console.error(error);
@@ -173,6 +175,7 @@ export default class MonzoClient {
     }
 
     async #Request(method, url, data, isRetry) {
+        console.debug(`Sending ${method} request to '${url}'`);
         try {
             return await axios({
                 method: method,
@@ -181,18 +184,19 @@ export default class MonzoClient {
                 headers: { Authorization: `Bearer ${this.#ACCESS_TOKEN}` }
             })
         } catch (error) {
+            console.error(`Monzo Client request failed with status code ${error.response?.status}. ${error}`)
             // Only attempt to re-authenticate once, if this fails it's likely the refresh token is no longer valid and the user must
             // re-authenticate using the /auth endpoint.
-            if (error.response?.status === 403 && !isRetry) {
+            if ((error.response?.status === 401 || error.response?.status === 403) && !isRetry) {
                 try {
-                    console.log('Request failed with "Unauthorised" status code. Attempting to refresh access token...');
+                    console.error('Request failed with "Unauthorised" status code. Attempting to refresh access token...');
                     await this.RefreshAccessToken(this.#REFRESH_TOKEN);
                 } catch (error) {
                     // TODO: Email user to re-authenticate.
                     return
                 }
 
-                this.#Request(method, url, data, true);
+                return await this.#Request(method, url, data, true);
             } else {
                 throw error;
             }
