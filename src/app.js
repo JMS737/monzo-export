@@ -71,6 +71,17 @@ server.get('/transactions', async (req, res) => {
     res.end(JSON.stringify(data));
 })
 
+server.get('/transactions/latest', async (req, res) => {
+    const date = new Date();
+    date.setDate(date.getDate() - 5);
+    date.setHours(0, 0, 0 ,0);
+    const since = date.toISOString();
+
+    const data = await client.GetTransactions(since);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(data));
+})
+
 server.get('/export/transactions', async (req, res) => {
     const queryObject = parse(req.url, true).query;
     const data = await client.GetTransactions(queryObject.since);
@@ -82,7 +93,7 @@ server.get('/export/transactions', async (req, res) => {
 
 server.get('/export/transactions/latest', async (req, res) => {
     const date = new Date();
-    date.setMonth(date.getMonth() - 1);
+    date.setDate(date.getDate() - 5);
     date.setHours(0, 0, 0 ,0);
     const since = date.toISOString();
     console.log(since);
