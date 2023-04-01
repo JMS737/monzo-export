@@ -9,6 +9,7 @@ import { parse } from 'url';
 import { stringify } from 'csv-stringify';
 import format from 'date-format';
 import MonzoClient from "./MonzoClient.js";
+import EmailSender from "./EmailSender.js";
 
 const hostname = process.env.HOSTNAME;
 const port = Number(process.env.PORT);
@@ -21,7 +22,17 @@ const OUTPUT_FILENAME = process.env.OUTPUT_FILENAME
 const OUTPUT_DIRECTORY = process.env.OUTPUT_DIRECTORY;
 const ARCHIVE_DIRECTORY = process.env.ARCHIVE_DIRECTORY;
 
-const client = new MonzoClient();
+const emailSender = new EmailSender({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    username: 'your-email@gmail.com',
+    password: 'your-password',
+    from: 'Your Name <your-email@gmail.com>'
+  });
+
+const client = new MonzoClient(emailSender);
+  
 
 await Setup();
 
