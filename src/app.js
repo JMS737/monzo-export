@@ -13,6 +13,7 @@ import MonzoClient from "./MonzoClient.js";
 const hostname = process.env.HOSTNAME;
 const port = Number(process.env.PORT);
 const server = express();
+const includeTime = process.env.INCLUDE_TIME.toLowerCase() == "true";
 
 const OUTPUT_FILENAME = process.env.OUTPUT_FILENAME
 
@@ -116,7 +117,7 @@ function TransformTransactions(transactions) {
         return {
             account_id: transaction.account_id,
             id: transaction.id,
-            date: format("yyyy/MM/dd", createdDate),
+            date: format(includeTime ? "yyyy/MM/dd hh:mm:ss" : "yyyy/MM/dd", createdDate),
             time: format("hh:mm:ss", createdDate),
             type: transaction.scheme,
             merchant: transaction.merchant?.name,
