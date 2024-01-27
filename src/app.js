@@ -76,26 +76,27 @@ server.get('/accounts', async (req, res) => {
 
 server.get('/transactions', async (req, res) => {
     const queryObject = parse(req.url, true).query;
-    const data = await client.GetTransactions(queryObject.since);
+    const data = await client.GetTransactions(queryObject.since, queryObject.pending !== "false");
 
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end(JSON.stringify(data));
 })
 
 server.get('/transactions/latest', async (req, res) => {
+    const queryObject = parse(req.url, true).query;
     const date = new Date();
     date.setDate(date.getDate() - 5);
     date.setHours(0, 0, 0, 0);
     const since = date.toISOString();
 
-    const data = await client.GetTransactions(since);
+    const data = await client.GetTransactions(since, queryObject.pending !== "false");
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end(JSON.stringify(data));
 })
 
 server.get('/export/transactions', async (req, res) => {
     const queryObject = parse(req.url, true).query;
-    const data = await client.GetTransactions(queryObject.since);
+    const data = await client.GetTransactions(queryObject.since, queryObject.pending !== "false");
     TransactionsToCsv(TransformTransactions(data.transactions));
 
     res.writeHead(200, {'Content-Type': 'application/json'});
@@ -103,13 +104,14 @@ server.get('/export/transactions', async (req, res) => {
 })
 
 server.get('/export/transactions/latest', async (req, res) => {
+    const queryObject = parse(req.url, true).query;
     const date = new Date();
     date.setDate(date.getDate() - 5);
     date.setHours(0, 0, 0, 0);
     const since = date.toISOString();
     console.log(since);
 
-    const data = await client.GetTransactions(since);
+    const data = await client.GetTransactions(since, queryObject.pending !== "false");
     TransactionsToCsv(TransformTransactions(data));
 
     res.writeHead(200, {'Content-Type': 'application/json'});
