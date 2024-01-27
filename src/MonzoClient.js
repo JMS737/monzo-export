@@ -193,7 +193,7 @@ export default class MonzoClient {
                     await this.RefreshAccessToken(this.#REFRESH_TOKEN);
                 } catch (error) {
                     // TODO: Email user to re-authenticate.
-                    this.emailSender.send('<youremail@example.com>', 'Monzo Export Authentication Required' '<p>The monzo export requires to to re-authenticate your account.</p>')
+                    this.emailSender.send('<youremail@example.com>', 'Monzo Export Authentication Required', '<p>The monzo export requires to to re-authenticate your account.</p>')
                     return
                 }
 
