@@ -1,6 +1,6 @@
 import axios from "axios";
-import { writeFile, readFile, mkdir } from "fs/promises";
-import { v4 as uuidv4 } from "uuid";
+import {writeFile, readFile, mkdir} from "fs/promises";
+import {v4 as uuidv4} from "uuid";
 
 /* TODO:
 - [ ] Send an email notifying the user that the service needs to be reauthenticated.
@@ -23,11 +23,11 @@ export default class MonzoClient {
     #USER_ID = undefined;
 
     constructor() {
-        
+
     }
 
     async Init() {
-        await mkdir(this.#TOKEN_DIRECTORY, { recursive: true });
+        await mkdir(this.#TOKEN_DIRECTORY, {recursive: true});
 
         // Load any existing Refresh Token and if available use that to get a new Access Token.
         // TODO: Otherwise send an email to the user asking them to authenticate using the /auth endpoint.
@@ -128,24 +128,27 @@ export default class MonzoClient {
         }
     }
 
-    async GetTransactions(since) {
+    async GetTransactions(since, includePending = true) {
         const accounts = await this.GetAccounts();
-        return (await Promise.all(accounts.accounts.map(async account => await this.GetTransactionsForAccount(account.id, since)))).flatMap(x => x.transactions);
+        return (await Promise.all(accounts.accounts.map(async account => await this.GetTransactionsForAccount(account.id, since))))
+            .flatMap(x => x.transactions)
+            .filter(value => includePending || value.amount_is_pending !== true);
     }
 
-    async GetTransactionsForAccount(account_id, since) {
+    async GetTransactionsForAccount(account_id, since, limit = 100) {
         try {
             const params = {
-                account_id: account_id
+                account_id: account_id,
+                limit: limit
             };
 
-            if (since != undefined) {
+            if (since !== undefined) {
                 params.since = since;
             }
 
             const qs = new URLSearchParams(params).toString();
             const response = await this.#Request('get', `${this.#MONZO_API_ENDPOINT}/transactions?expand[]=merchant&${qs}`);
-            return response.data
+            return response.data;
         } catch (error) {
             console.error('Failed to get transactions.');
             console.error(error);
@@ -181,7 +184,7 @@ export default class MonzoClient {
                 method: method,
                 url: url,
                 data: data,
-                headers: { Authorization: `Bearer ${this.#ACCESS_TOKEN}` }
+                headers: {Authorization: `Bearer ${this.#ACCESS_TOKEN}`}
             })
         } catch (error) {
             console.error(`Monzo Client request failed with status code ${error.response?.status}. ${error}`)
