@@ -97,7 +97,7 @@ server.get('/transactions/latest', async (req, res) => {
 server.get('/export/transactions', async (req, res) => {
     const queryObject = parse(req.url, true).query;
     const data = await client.GetTransactions(queryObject.since, queryObject.pending !== "false");
-    TransactionsToCsv(TransformTransactions(data.transactions));
+    TransactionsToCsv(TransformTransactions(data));
 
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end(JSON.stringify({success: true}));
