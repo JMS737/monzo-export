@@ -119,7 +119,7 @@ Transfer-Encoding: chunked
 #### Request
 `/GET /transactions`
 
-Optional Date Parameter `since` (only fetches transactions on and after that date).
+Optional Date Parameter `since` (only fetches transactions on and after that date, defaults to one month prior to today's date).
 ``` bash
 curl -i -H 'Accept: application/json' http://localhost:8080/transactions?since=2022-01-31T00:00:00.000Z
 ```
@@ -166,14 +166,16 @@ Transfer-Encoding: chunked
 ```
 
 ### Transactions (CSV Export)
-Calling either of these endpoints will trigger the generation of a CSV containing the all transactions after the provided `since` parameter, or all transactions if this is omitted **(see [Limitations and Caveats](#limitations-and-caveats) to get transactions older than 90 days).**
+Calling either of these endpoints will trigger the generation of a CSV containing the all transactions after the provided `since` parameter, or all transactions within the last month.
+
+**See [Limitations and Caveats](#limitations-and-caveats) to get transactions older than 90 days.**
 
 The CSV is output can be configured with the `OUTPUT_DIRECTORY` and `OUTPUT_FILENAME` configuration values. By default it will be saved to `./output/export.csv`.
 
 #### Requests
 `/GET /export/transactions`
 
-Optional Date Parameter `since` (only fetches transactions on and after that date).
+Optional Date Parameter `since` (only fetches transactions on and after that date, defaults to one month prior to today's date).
 ```
 curl -i -H 'Accept: application/json' http://localhost:8080/export/transactions?since=2022-01-31T00:00:00.000Z
 ```
@@ -219,4 +221,7 @@ docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t <image na
 
 ## Limitations and Caveats
 ### Retrieving transactions older than 90 days
-Due to *Strong Customer Authentication* changes implemented by Monzo you are only able to fetch all transactions within the first 5 minutes after authentication. After this 5 minute period you'll only be able to fetch transactions within the last 90 days. *(Failing to enter a valid `since` date as a query parameter on the `/transactions` and `/export/transactions` endpoints will result in a HTTP 403 (Unauthorised) error).*
+Due to *Strong Customer Authentication* changes implemented by Monzo you are only able to fetch all transactions within
+the first 5 minutes after authentication. After this 5 minute period you'll only be able to fetch transactions within the last 90 days.
+
+If omitted, the `since` parameter will default to a month before today's date.  

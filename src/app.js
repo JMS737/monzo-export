@@ -76,7 +76,7 @@ server.get('/accounts', async (req, res) => {
 
 server.get('/transactions', async (req, res) => {
     const queryObject = parse(req.url, true).query;
-    const data = await client.GetTransactions(queryObject.since, queryObject.pending !== "false");
+    const data = await client.GetTransactions(queryObject.since, queryObject.pending !== "false", queryObject.declined === "true");
 
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end(JSON.stringify(data));
@@ -89,14 +89,14 @@ server.get('/transactions/latest', async (req, res) => {
     date.setHours(0, 0, 0, 0);
     const since = date.toISOString();
 
-    const data = await client.GetTransactions(since, queryObject.pending !== "false");
+    const data = await client.GetTransactions(since, queryObject.pending !== "false", queryObject.declined === "true");
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end(JSON.stringify(data));
 })
 
 server.get('/export/transactions', async (req, res) => {
     const queryObject = parse(req.url, true).query;
-    const data = await client.GetTransactions(queryObject.since, queryObject.pending !== "false");
+    const data = await client.GetTransactions(queryObject.since, queryObject.pending !== "false", queryObject.declined === "true");
     TransactionsToCsv(TransformTransactions(data));
 
     res.writeHead(200, {'Content-Type': 'application/json'});
@@ -111,7 +111,7 @@ server.get('/export/transactions/latest', async (req, res) => {
     const since = date.toISOString();
     console.log(since);
 
-    const data = await client.GetTransactions(since, queryObject.pending !== "false");
+    const data = await client.GetTransactions(since, queryObject.pending !== "false", queryObject.declined === "true");
     TransactionsToCsv(TransformTransactions(data));
 
     res.writeHead(200, {'Content-Type': 'application/json'});
