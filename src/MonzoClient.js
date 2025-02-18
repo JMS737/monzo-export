@@ -142,13 +142,59 @@ export default class MonzoClient {
                 limit: limit
             };
 
-            if (since !== undefined) {
-                params.since = since;
+            // default since to one month's worth of transactions
+            if (since === undefined) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - 1);
+                date.setHours(0, 0, 0, 0);
+                since = date.toISOString();
             }
+            
+            let sinceDate = new Date(since);
+            let beforeDate = new Date(sinceDate);
+            beforeDate.setFullYear(beforeDate.getFullYear() + 1);
+            beforeDate = new Date(beforeDate - 1000 * 60 * 60 * 24);
+            let sinceId = null;
 
-            const qs = new URLSearchParams(params).toString();
-            const response = await this.#Request('get', `${this.#MONZO_API_ENDPOINT}/transactions?expand[]=merchant&${qs}`);
-            return response.data;
+            let transactions = [];
+
+            // keep looping over pages whilst there is still data being returned
+            while (true) {
+                params.before = beforeDate.toISOString();
+                
+                if (sinceId == null) {
+                    params.since = sinceDate.toISOString();
+                } else {
+                    params.since = sinceId
+                }
+                
+                const qs = new URLSearchParams(params).toString();
+                const response = await this.#Request('get', `${this.#MONZO_API_ENDPOINT}/transactions?expand[]=merchant&${qs}`);
+                transactions = transactions.concat(response.data.transactions);
+                
+                const len = response.data.transactions.length;
+                if (len < 100 && beforeDate > new Date()) {
+                    break;
+                }
+                
+                if (len === 0) {
+                    // skip to the next year
+                    sinceDate.setFullYear(sinceDate.getFullYear() + 1);
+                    beforeDate.setFullYear(beforeDate.getFullYear() + 1);
+                    sinceId = null;
+                    continue;
+                }
+
+                sinceId = response.data.transactions[len - 1].id;
+                
+                // update pagination based on the latest transaction received
+                // update the dates in case they need to be used where there are no transactions within the year
+                sinceDate = new Date(response.data.transactions[len - 1].created);
+                beforeDate = new Date(sinceDate)
+                beforeDate.setFullYear(beforeDate.getFullYear() + 1)
+                beforeDate = new Date(beforeDate - 1000 * 60 * 60 * 24);
+            }
+            return {transactions: transactions};
         } catch (error) {
             console.error('Failed to get transactions.');
             console.error(error);
