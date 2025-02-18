@@ -128,11 +128,12 @@ export default class MonzoClient {
         }
     }
 
-    async GetTransactions(since, includePending = true) {
+    async GetTransactions(since, includePending = true, includeDeclined = false) {
         const accounts = await this.GetAccounts();
         return (await Promise.all(accounts.accounts.map(async account => await this.GetTransactionsForAccount(account.id, since))))
             .flatMap(x => x.transactions)
-            .filter(value => includePending || value.amount_is_pending !== true);
+            .filter(value => includePending || value.amount_is_pending !== true)
+            .filter(value => includeDeclined || !value.decline_reason);
     }
 
     async GetTransactionsForAccount(account_id, since, limit = 100) {
